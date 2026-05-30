@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace Configuration Required | Planr</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+
+    <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <div class="mx-auto h-16 w-16 bg-amber-50 rounded-2xl border border-amber-200 flex items-center justify-center text-amber-600 shadow-sm animate-pulse">
+            <i data-lucide="shield-alert" class="w-8 h-8"></i>
+        </div>
+
+        <h2 class="mt-6 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+            Account Registration Incomplete
+        </h2>
+        <p class="mt-2 text-sm text-slate-500 max-w-sm mx-auto">
+            Your profile authenticated successfully, but it isn't linked to an active team environment or workspace database node.
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow-sm border border-slate-200 rounded-xl sm:px-10 space-y-6">
+
+            <div class="bg-slate-50/80 rounded-lg p-4 border border-slate-200/60 text-xs text-slate-600 space-y-2">
+                <span class="font-bold text-slate-800 uppercase tracking-wider block text-[10px]">Security Metadata Log:</span>
+                <p><strong>Authenticated Identifier:</strong> <span class="font-mono bg-slate-100 px-1 py-0.5 rounded">{{ request.user.email }}</span></p>
+                <p><strong>Internal Status:</strong> Orphaning detected / Missing Workspace Mapping</p>
+            </div>
+
+            <div class="space-y-3">
+                <a href="mailto:support@planr.io?subject=Orphaned%20Account%20Help%20-%20{{ request.user.email }}"
+                   class="w-full inline-flex justify-center items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    <i data-lucide="mail" class="w-4 h-4"></i>
+                    <span>Contact Systems Support</span>
+                </a>
+
+                <a href="{% url 'authentication:logout' %}"
+                   class="w-full inline-flex justify-center items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 focus:outline-none transition-all">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span>Sign Out & Try Again</span>
+                </a>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 text-center">
+                <p class="text-xs text-slate-400 font-medium">
+                    Think this is a structural mistake? Mention error node <span class="font-mono text-slate-500 font-semibold">ERR_WORKSPACE_ORPHAN</span> to engineering.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

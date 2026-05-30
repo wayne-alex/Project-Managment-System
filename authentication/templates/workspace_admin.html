@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Sheets | Planr</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="h-full font-sans antialiased text-slate-900 selection:bg-indigo-500 selection:text-white">
+
+    <div class="min-h-full flex">
+
+        <!-- ==================== SIDEBAR NAVIGATION ==================== -->
+        <aside class="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-slate-200 bg-white">
+            <div class="flex flex-col flex-1 min-h-0">
+
+                <!-- Logo Branding Header -->
+                <div class="flex items-center gap-2 px-6 h-16 border-b border-slate-100 shrink-0 text-indigo-600 font-bold text-xl tracking-tight">
+                    <i data-lucide="calendar-range" class="w-7 h-7"></i>
+                    <span>Planr</span>
+                </div>
+
+                <!-- Nav Scopes -->
+                <nav class="flex-1 px-4 py-6 space-y-7 overflow-y-auto">
+                    <!-- Core Workspace Area -->
+                    <div>
+                        <span class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Workspace</span>
+                        <div class="space-y-1">
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                                <span>Overview</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                <i data-lucide="kanban" class="w-4 h-4"></i>
+                                <span>Project Boards</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-semibold rounded-lg bg-indigo-50/60 text-indigo-600 transition-all">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                                <span>Time Sheets</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Administration -->
+                    <div>
+                        <span class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Administration</span>
+                        <div class="space-y-1">
+                            <a href="#" class="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="users" class="w-4 h-4"></i>
+                                    <span>Team & Members</span>
+                                </div>
+                                <span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 font-bold rounded-full">4</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                <i data-lucide="credit-card" class="w-4 h-4"></i>
+                                <span>Billing & Plan</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                <i data-lucide="sliders" class="w-4 h-4"></i>
+                                <span>Global Config</span>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Footer Logged Identity -->
+                <div class="p-4 border-t border-slate-100 shrink-0 bg-slate-50/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">JD</div>
+                        <div class="flex-1 min-w-0">
+                            <span class="block text-sm font-semibold text-slate-900 truncate">John Doe</span>
+                            <span class="block text-xs font-medium text-indigo-600 truncate uppercase tracking-tight">Super Admin</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+        <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
+
+            <!-- Global Top Bar Header -->
+            <header class="sticky top-0 z-40 h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 shadow-sm shadow-slate-100/40">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-slate-500 hover:text-slate-700">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                        <i data-lucide="clock" class="w-4 h-4 text-indigo-600"></i>
+                        <span class="text-sm font-bold text-slate-800">Utilization & Tracking</span>
+                    </div>
+                </div>
+
+                <!-- Quick Entry Summary Status -->
+                <div class="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-500">
+                    <span>This Sprint Status:</span>
+                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Approved
+                    </span>
+                </div>
+            </header>
+
+            <!-- Main Timesheet Workspace -->
+            <main class="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col space-y-6">
+
+                <!-- Page Directory Context Header -->
+                <div class="sm:flex sm:items-center sm:justify-between shrink-0">
+                    <div>
+                        <h1 class="text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">Time Sheets & Logs</h1>
+                        <p class="mt-0.5 text-xs text-slate-500">Record billable engineering hours, link task iterations, and manage cost center allocations.</p>
+                    </div>
+                    <div class="mt-4 sm:mt-0">
+                        <button onclick="toggleTimeModal(true)" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span>Log New Hours</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Time Utilization Metrics Matrix Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Logged Hours (This Week)</span>
+                        <div class="mt-1 flex items-baseline gap-2">
+                            <span class="text-2xl font-extrabold text-slate-900">34.5</span>
+                            <span class="text-xs font-bold text-slate-400">/ 40.0 hrs</span>
+                        </div>
+                        <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5">
+                            <div class="bg-indigo-600 h-1.5 rounded-full" style="width: 86%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Billable Core Ratio</span>
+                        <div class="mt-1 flex items-baseline gap-2">
+                            <span class="text-2xl font-extrabold text-emerald-600">91.3%</span>
+                            <span class="text-xs font-medium text-slate-400">31.5 hrs logged</span>
+                        </div>
+                        <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5">
+                            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 91.3%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Pending Approval Blocks</span>
+                        <div class="mt-1 flex items-baseline gap-2">
+                            <span class="text-2xl font-extrabold text-amber-600">4.5</span>
+                            <span class="text-xs font-medium text-slate-400">hrs in verification</span>
+                        </div>
+                        <div class="mt-2 w-full bg-slate-100 rounded-full h-1.5">
+                            <div class="bg-amber-400 h-1.5 rounded-full" style="width: 12%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Accumulated Billable Total</span>
+                        <div class="mt-1 flex items-baseline gap-1">
+                            <span class="text-xs font-bold text-slate-400">$</span>
+                            <span class="text-2xl font-extrabold text-slate-900">4,725.00</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-2 font-medium">Calculated at standard resource base rates</p>
+                    </div>
+                </div>
+
+                <!-- SPRINT INTERACTIVE DATE NAVIGATOR TAPE -->
+                <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <button class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-500 transition-colors"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                        <span class="text-sm font-bold text-slate-800 px-2">Sprint Range: May 18 – May 24, 2026</span>
+                        <button class="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-500 transition-colors"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+
+                    <!-- Micro Calendar Grid Strips -->
+                    <div class="grid grid-cols-7 gap-1 text-center w-full sm:w-auto max-w-sm">
+                        <div class="bg-slate-50 border border-slate-200 rounded px-2 py-1"><span class="block text-[9px] font-bold text-slate-400">M</span><span class="text-xs font-bold text-slate-700">18</span></div>
+                        <div class="bg-indigo-600 border border-indigo-700 text-white rounded px-2 py-1 shadow-xs"><span class="block text-[9px] font-indigo-200 font-medium">T</span><span class="text-xs font-extrabold">19</span></div>
+                        <div class="hover:bg-slate-50 border border-transparent rounded px-2 py-1 cursor-pointer"><span class="block text-[9px] font-bold text-slate-400">W</span><span class="text-xs font-bold text-slate-600">20</span></div>
+                        <div class="hover:bg-slate-50 border border-transparent rounded px-2 py-1 cursor-pointer"><span class="block text-[9px] font-bold text-slate-400">T</span><span class="text-xs font-bold text-slate-600">21</span></div>
+                        <div class="hover:bg-slate-50 border border-transparent rounded px-2 py-1 cursor-pointer"><span class="block text-[9px] font-bold text-slate-400">F</span><span class="text-xs font-bold text-slate-600">22</span></div>
+                        <div class="hover:bg-slate-50 border border-transparent rounded px-2 py-1 text-slate-300 pointer-events-none"><span class="block text-[9px] font-bold text-slate-300">S</span><span class="text-xs font-bold">23</span></div>
+                        <div class="hover:bg-slate-50 border border-transparent rounded px-2 py-1 text-slate-300 pointer-events-none"><span class="block text-[9px] font-bold text-slate-300">S</span><span class="text-xs font-bold">24</span></div>
+                    </div>
+                </div>
+
+                <!-- TABLE: TIMELINE LOG REGISTRY -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col justify-between">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+                            <thead class="bg-slate-50 text-slate-400 font-bold text-xs uppercase tracking-wider select-none">
+                                <tr>
+                                    <th class="px-6 py-3.5">Log Date / Period</th>
+                                    <th class="px-6 py-3.5">Target Scope Project</th>
+                                    <th class="px-6 py-3.5">Description Breakdown Notes</th>
+                                    <th class="px-6 py-3.5">Billing Tier</th>
+                                    <th class="px-6 py-3.5 text-right">Logged Delta</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-slate-700">
+
+                                <!-- Log Row 1 -->
+                                <tr class="hover:bg-slate-50/40 transition-colors">
+                                    <td class="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">
+                                        May 19, 2026 <span class="block text-xs font-medium text-slate-400">Today</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-semibold text-slate-800 block">Q2 Infra Rollout</span>
+                                        <span class="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">PLN-104</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-xs font-medium text-slate-600 max-w-sm truncate">
+                                        Mapped multi-tenant metadata segregation layers and confirmed isolation blocks in sandbox env.
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">Billable</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                                        5.5 hrs
+                                    </td>
+                                </tr>
+
+                                <!-- Log Row 2 -->
+                                <tr class="hover:bg-slate-50/40 transition-colors">
+                                    <td class="px-6 py-4 font-semibold text-slate-600 whitespace-nowrap">
+                                        May 19, 2026 <span class="block text-xs font-medium text-slate-400">Today</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-semibold text-slate-800 block">Q2 Infra Rollout</span>
+                                        <span class="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">PLN-105</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-xs text-slate-500 max-w-sm truncate">
+                                        Refactored Access Token validation loop hooks to bypass structural dependency latency spikes.
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">Billable</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                                        2.5 hrs
+                                    </td>
+                                </tr>
+
+                                <!-- Log Row 3 -->
+                                <tr class="hover:bg-slate-50/40 transition-colors">
+                                    <td class="px-6 py-4 font-semibold text-slate-600 whitespace-nowrap">
+                                        May 18, 2026 <span class="block text-xs font-medium text-slate-400">Yesterday</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-semibold text-slate-800 block">Workspace UI Ops</span>
+                                        <span class="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">PLN-102</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-xs text-slate-500 max-w-sm truncate">
+                                        Engineered responsiveness on the Kanban task layout modules across medium resolution viewport layouts.
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">Billable</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                                        8.0 hrs
+                                    </td>
+                                </tr>
+
+                                <!-- Log Row 4 -->
+                                <tr class="hover:bg-slate-50/40 transition-colors bg-slate-50/20">
+                                    <td class="px-6 py-4 font-semibold text-slate-600 whitespace-nowrap">
+                                        May 18, 2026 <span class="block text-xs font-medium text-slate-400">Yesterday</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="font-semibold text-slate-500 block">Internal Operations</span>
+                                        <span class="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">MGMT-01</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-xs text-slate-400 max-w-sm truncate italic">
+                                        Quarterly strategic stack alignment sync and capacity planning matrix review with engineering stakeholders.
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">Non-Billable</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-mono font-bold text-slate-500 whitespace-nowrap">
+                                        1.5 hrs
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Table Footer Micro Summary Info -->
+                    <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-400 font-medium select-none">
+                        <span>Showing time log records for the selected active billing scope.</span>
+                        <span class="font-mono bg-white border border-slate-200 px-1.5 py-0.5 rounded">Total Sprint Track: 17.5 hrs</span>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ==================== TIME TRACKING MODAL DIALOG ==================== -->
+    <div id="time_modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full border border-slate-200 overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-extrabold text-slate-900">Record Working Interval</h3>
+                <button onclick="toggleTimeModal(false)" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form action="#" method="POST" class="p-6 space-y-4">
+                <!-- Select Project Context Routing Link -->
+                <div>
+                    <label for="log_project" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Target Project Scope</label>
+                    <select id="log_project" class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="pln104">Q2 Core Infrastructure Rollout (PLN-104)</option>
+                        <option value="pln102">Client Web Portal UI Framework (PLN-102)</option>
+                        <option value="mgmt01">Internal Corporate Management (MGMT-01)</option>
+                    </select>
+                </div>
+
+                <!-- Hours Input & Date Allocation Row -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="log_date" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Date Logged</label>
+                        <input id="log_date" type="date" value="2026-05-19" required
+                            class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="log_hours" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Hours Expended</label>
+                        <input id="log_hours" type="number" step="0.25" min="0.25" max="24" required placeholder="e.g., 4.5"
+                            class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <!-- Billing Type Filter Switch -->
+                <div>
+                    <label for="log_type" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Classification Tier</label>
+                    <select id="log_type" class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="billable">Billable Hours (To Client Invoicing Block)</option>
+                        <option value="non-billable">Non-Billable Hours (Internal Admin overhead)</option>
+                    </select>
+                </div>
+
+                <!-- Engineering Description Logs Area -->
+                <div>
+                    <label for="log_desc" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Task Log Breakdown Narrative</label>
+                    <textarea id="log_desc" rows="3" required placeholder="Detail architectural steps performed or milestones secured..."
+                        class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+
+                <!-- Form Controls Actions Bar -->
+                <div class="pt-4 flex items-center justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="toggleTimeModal(false)" class="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+                        Discard Draft
+                    </button>
+                    <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                        <span>Commit Log Entry</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Initialize Lucide Icons & Functionalities -->
+    <script>
+        lucide.createIcons();
+
+        // Control Visibility State Layer For Timesheets Logging Window Modal Natively
+        function toggleTimeModal(show) {
+            const modal = document.getElementById('time_modal');
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

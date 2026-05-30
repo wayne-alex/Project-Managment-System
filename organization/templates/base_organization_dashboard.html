@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> {% block tittle %} {% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="h-full font-sans antialiased text-slate-900 selection:bg-indigo-500 selection:text-white">
+
+    <div class="min-h-full flex">
+
+        <!-- ==================== SIDEBAR NAVIGATION ==================== -->
+        <aside class="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-slate-200 bg-white">
+            <div class="flex flex-col flex-1 min-h-0">
+
+                <!-- Logo Branding Header -->
+                <div class="flex items-center gap-2 px-6 h-16 border-b border-slate-100 shrink-0 text-indigo-600 font-bold text-xl tracking-tight">
+                    <i data-lucide="calendar-range" class="w-7 h-7"></i>
+                    <span>Planr</span>
+                </div>
+
+                <!-- Nav Scopes -->
+                <nav class="flex-1 px-4 py-6 space-y-7 overflow-y-auto">
+                    <!-- Core Workspace Area -->
+                    <div>
+                        <span class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Workspace</span>
+                        <div class="space-y-1">
+                            <a href="{% url 'organization:workspace' org.id %}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                                <span>Overview</span>
+                            </a>
+                            <a href="{% url 'organization:projects' org.id %}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                <i data-lucide="kanban" class="w-4 h-4"></i>
+                                <span>Project Boards</span>
+                            </a>
+                            <a href="{% url 'organization:storage' org.id %}" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all {% block storage_active %}{% endblock %}">
+                                <i data-lucide="folder-open" class="w-4 h-4"></i>
+                                <span>File Storage</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-semibold rounded-lg bg-indigo-50/60 text-indigo-600 transition-all">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                                <span>Time Sheets</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Administration -->
+                    <div>
+                        <span class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Administration</span>
+                        <div class="space-y-1">
+                            <a href="#" class="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="users" class="w-4 h-4"></i>
+                                    <span>Team & Members</span>
+                                </div>
+                                <span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 font-bold rounded-full">4</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                <i data-lucide="credit-card" class="w-4 h-4"></i>
+                                <span>Billing & Plan</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                                <i data-lucide="sliders" class="w-4 h-4"></i>
+                                <span>Global Config</span>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Footer Logged Identity -->
+                <div class="p-4 border-t border-slate-100 shrink-0 bg-slate-50/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">JD</div>
+                        <div class="flex-1 min-w-0">
+                            <span class="block text-sm font-semibold text-slate-900 truncate">{{ request.user.first_name }} {{ request.user.last_name }}</span>
+                            <span class="block text-xs font-medium text-indigo-600 truncate uppercase tracking-tight">{{ membership.role }}</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+       {% block content %}
+        {% endblock %}
+    </div>
+
+
+</body>
+</html>

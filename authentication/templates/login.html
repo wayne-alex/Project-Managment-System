@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Planr</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%       { transform: translateX(-6px); }
+            40%       { transform: translateX(6px); }
+            60%       { transform: translateX(-4px); }
+            80%       { transform: translateX(4px); }
+        }
+        .msg-animate  { animation: slideDown 0.25s ease forwards; }
+        .shake        { animation: shake 0.4s ease; }
+
+        .btn-spinner {
+            display: none;
+            width: 18px; height: 18px;
+            border: 2.5px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-loading .btn-spinner   { display: block; }
+        .btn-loading .btn-label     { display: none; }
+    </style>
+</head>
+<body class="h-full font-sans antialiased text-slate-900">
+
+<div class="flex min-h-full">
+
+    <!-- ── Left: Login Form ───────────────────────────────────────────── -->
+    <div class="flex flex-col justify-center flex-1 px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-white z-10 shadow-xl">
+        <div class="mx-auto w-full max-w-sm lg:w-96">
+
+            <!-- Logo -->
+            <div>
+                <div class="flex items-center gap-2 text-indigo-600 font-bold text-2xl tracking-tight">
+                    <i data-lucide="calendar-range" class="w-8 h-8"></i>
+                    <span>Planr</span>
+                </div>
+                <h2 class="mt-8 text-3xl font-extrabold tracking-tight text-slate-900">
+                    Sign in to your workspace
+                </h2>
+                <p class="mt-2 text-sm text-slate-600">
+                    Or
+                    <a href="{% url 'authentication:register' %}" class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
+                        register your company
+                    </a>
+                </p>
+            </div>
+
+            <!-- ── Message Box ───────────────────────────────────────────── -->
+            <!-- hidden by default; JS shows it with .msg-animate            -->
+            <div id="msg-box"
+                 class="hidden mt-6 rounded-lg px-4 py-3 text-sm flex items-start gap-3 msg-animate"
+                 role="alert" aria-live="polite">
+                <i id="msg-icon" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+                <span id="msg-text"></span>
+            </div>
+
+            <!-- ── Form ──────────────────────────────────────────────────── -->
+            <div class="mt-6">
+                <form id="login-form" novalidate class="space-y-6">
+                    {% csrf_token %}
+
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-slate-700">
+                            Work Email Address
+                        </label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <i data-lucide="mail" class="w-5 h-5"></i>
+                            </div>
+                            <input id="email" name="email" type="email" autocomplete="email" required
+                                class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg text-sm
+                                       placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                       focus:border-indigo-500 transition-all"
+                                placeholder="you@company.com">
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
+                            <div class="text-sm">
+                                <a href="{% url 'authentication:forgotpassword' %}" class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
+                                    Forgot password?
+                                </a>
+                            </div>
+                        </div>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <i data-lucide="lock" class="w-5 h-5"></i>
+                            </div>
+                            <input id="password" name="password" type="password" autocomplete="current-password" required
+                                class="block w-full pl-10 pr-10 py-2.5 border border-slate-300 rounded-lg text-sm
+                                       placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                       focus:border-indigo-500 transition-all"
+                                placeholder="••••••••">
+                            <!-- Toggle visibility -->
+                            <button type="button" id="toggle-pw"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                                aria-label="Toggle password visibility">
+                                <i data-lucide="eye" class="w-5 h-5" id="eye-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded cursor-pointer">
+                        <label for="remember-me" class="ml-2 block text-sm text-slate-700 cursor-pointer select-none">
+                            Remember this device
+                        </label>
+                    </div>
+
+                    <!-- Submit -->
+                    <div>
+                        <button type="submit" id="submit-btn"
+                            class="w-full flex items-center justify-center gap-2 py-3 px-4 border border-transparent
+                                   rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-600
+                                   hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2
+                                   focus:ring-indigo-500 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                            <span class="btn-spinner" id="btn-spinner"></span>
+                            <span class="btn-label">Sign In</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- SSO -->
+                <div class="mt-6">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-slate-200"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-slate-500">Or continue with SSO</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <a href="#"
+                            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-300
+                                   rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <g>
+                                    <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28-0.96,2.37-2.04,3.1v2.6h3.3c1.92-1.78,3.02-4.4,3.02-7.4C21.65,11.9,21.54,11.5,21.35,11.1z" fill="#4285F4"/>
+                                    <path d="M12,20.74c2.43,0,4.47-0.8,5.96-2.2l-3.3-2.6c-0.9,0.6-2.07,0.98-3.3,0.98-2.34,0-4.33-1.58-5.03-3.7H2.92v2.7C4.4,18.87,8.01,20.74,12,20.74z" fill="#34A853"/>
+                                    <path d="M6.97,13.22a5.3,5.3,0,0,1,0-3.4V7.12H2.92a8.94,8.94,0,0,0,0,8.8z" fill="#FBBC05"/>
+                                    <path d="M12,7.02c1.3,0,2.5,0.45,3.42,1.32l2.6-2.6C16.46,4.2,14.43,3.26,12,3.26c-4,0-7.6,1.87-9.08,4.94l4.05,3.12C7.67,8.6,9.66,7.02,12,7.02z" fill="#EA4335"/>
+                                </g>
+                            </svg>
+                            <span>Google Workspace</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Right: Product Highlight ─────────────────────────────────────── -->
+    <div class="hidden lg:block relative flex-1 w-0 bg-slate-900">
+        <div class="absolute inset-0 bg-gradient-to-br from-indigo-900/40 to-slate-950 z-10"></div>
+        <img class="absolute inset-0 h-full w-full object-cover opacity-30"
+             src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1200&q=80"
+             alt="Planr Workspace Dashboard">
+
+        <div class="absolute inset-0 z-20 flex flex-col justify-between p-16 text-white max-w-2xl">
+            <div class="flex items-center gap-2 tracking-wider text-xs font-semibold text-indigo-400 uppercase">
+                <span class="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
+                Now Live: Real-Time Burndown Reports &amp; Milestones
+            </div>
+
+            <blockquote class="space-y-4">
+                <p class="text-3xl font-medium leading-relaxed tracking-tight">
+                    "With Planr, tracking our product lifecycle from to-do to archived is seamless.
+                     Our team permissions are isolated, and the Gantt workflows keep us moving instantly."
+                </p>
+                <footer class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-sm">AM</div>
+                    <div>
+                        <p class="text-base font-semibold">Sarah Jenkins</p>
+                        <p class="text-sm text-slate-400">Operations Director, Acma Corp</p>
+                    </div>
+                </footer>
+            </blockquote>
+
+            <div class="text-xs text-slate-500 flex gap-6">
+                <span>© 2026 Planr Inc.</span>
+                <a href="{% url 'authentication:dataseparationact' %}" class="hover:text-slate-300 transition-colors">Privacy Policy</a>
+                <a href="{% url 'authentication:dataseparationact' %}" class="hover:text-slate-300 transition-colors">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    /* ── helpers ─────────────────────────────────────────────────────── */
+    const $ = id => document.getElementById(id);
+
+    function showMsg(text, type = 'error') {
+        const box  = $('msg-box');
+        const icon = $('msg-icon');
+        const msg  = $('msg-text');
+
+        const styles = {
+            error:   { bg: 'bg-red-50 text-red-800 border border-red-200',   icon: 'circle-x',     iconCls: 'text-red-500'  },
+            success: { bg: 'bg-green-50 text-green-800 border border-green-200', icon: 'circle-check', iconCls: 'text-green-500' },
+            info:    { bg: 'bg-blue-50 text-blue-800 border border-blue-200',  icon: 'info',         iconCls: 'text-blue-500' },
+        };
+
+        const s = styles[type] || styles.error;
+
+        // Reset classes
+        box.className = `mt-6 rounded-lg px-4 py-3 text-sm flex items-start gap-3 msg-animate ${s.bg}`;
+        icon.className = `w-5 h-5 flex-shrink-0 mt-0.5 ${s.iconCls}`;
+        icon.setAttribute('data-lucide', s.icon);
+        msg.textContent = text;
+
+        box.classList.remove('hidden');
+        lucide.createIcons();
+
+        if (type === 'error') {
+            const form = $('login-form');
+            form.classList.add('shake');
+            form.addEventListener('animationend', () => form.classList.remove('shake'), { once: true });
+        }
+    }
+
+    function hideMsg() {
+        $('msg-box').classList.add('hidden');
+    }
+
+    function setLoading(on) {
+        const btn = $('submit-btn');
+        btn.disabled = on;
+        btn.classList.toggle('btn-loading', on);
+    }
+
+    /* ── remember-me: restore on load ───────────────────────────────── */
+    (function restoreCredentials() {
+        const saved = localStorage.getItem('planr_saved_creds');
+        if (!saved) return;
+        try {
+            const { email, password } = JSON.parse(saved);
+            $('email').value    = email    || '';
+            $('password').value = password || '';
+            $('remember-me').checked = true;
+        } catch (_) {}
+    })();
+
+    /* ── password visibility toggle ─────────────────────────────────── */
+    $('toggle-pw').addEventListener('click', () => {
+        const pw  = $('password');
+        const eye = $('eye-icon');
+        const isHidden = pw.type === 'password';
+        pw.type = isHidden ? 'text' : 'password';
+        eye.setAttribute('data-lucide', isHidden ? 'eye-off' : 'eye');
+        lucide.createIcons();
+    });
+
+    /* ── AJAX login ──────────────────────────────────────────────────── */
+    $('login-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        hideMsg();
+
+        const email    = $('email').value.trim();
+        const password = $('password').value;
+        const remember = $('remember-me').checked;
+
+        if (!email || !password) {
+            showMsg('Please enter your email and password.', 'error');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            const res = await fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ email, password, remember }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                /* Save or clear credentials */
+                if (remember) {
+                    localStorage.setItem('planr_saved_creds', JSON.stringify({ email, password }));
+                } else {
+                    localStorage.removeItem('planr_saved_creds');
+                }
+
+                showMsg(data.message || 'Login successful! Redirecting…', 'success');
+
+                setTimeout(() => {
+                    window.location.href = data.redirect || '/dashboard/';
+                }, 800);
+            } else {
+                showMsg(data.message || 'Invalid credentials. Please try again.', 'error');
+            }
+        } catch (err) {
+            showMsg('Network error. Please check your connection and try again.', 'error');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    });
+</script>
+</body>
+</html>

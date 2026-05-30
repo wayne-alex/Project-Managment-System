@@ -1,0 +1,860 @@
+{% extends "base_organization_dashboard.html" %}
+
+{% block content %}
+
+    <!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+    <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
+
+        <!-- Global Top Bar Header -->
+        <header class="sticky top-0 z-40 h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 shadow-sm shadow-slate-100/40">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-slate-500 hover:text-slate-700">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <!-- Project Selector Dropdown -->
+                <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-all">
+                    <div class="w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
+                    <span class="text-sm font-bold text-slate-800">Q2 Core Infrastructure Rollout</span>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                </div>
+            </div>
+
+            <!-- View Switcher Tabs -->
+            <div class="hidden lg:flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-semibold text-slate-600">
+                <button id="tab-board" onclick="switchView('board')" class="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors" style="background:white;color:#1e293b;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+                    <i data-lucide="kanban" class="w-3.5 h-3.5" style="color:#4f46e5"></i> Board
+                </button>
+                <button id="tab-list" onclick="switchView('list')" class="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors hover:text-slate-900">
+                    <i data-lucide="list" class="w-3.5 h-3.5"></i> List
+                </button>
+                <button id="tab-calendar" onclick="switchView('calendar')" class="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors hover:text-slate-900">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Calendar
+                </button>
+                <button id="tab-analytics" onclick="switchView('analytics')" class="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors hover:text-slate-900">
+                    <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i> Analytics
+                </button>
+            </div>
+
+            <!-- Right side actions -->
+            <div class="flex items-center gap-2">
+                <button onclick="openAISuggest()" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;font-size:11px;font-weight:700;color:#4f46e5;background:#eef2ff;border:1px dashed #4f46e5;border-radius:8px;cursor:pointer;font-family:inherit">
+                    ✦ AI Suggest
+                </button>
+                <button onclick="toggleTaskModal(true)" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    <span>New Task</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Search + Filter Toolbar -->
+        <div style="height:48px;background:white;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 24px;gap:10px;flex-shrink:0">
+            <div style="position:relative">
+                <i data-lucide="search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:#94a3b8;pointer-events:none"></i>
+                <input id="searchInput" type="text" placeholder="Search tasks..." oninput="applyFilters()" style="height:30px;padding:0 10px 0 30px;border-radius:7px;border:1px solid #e2e8f0;font-size:12px;color:#1e293b;width:180px;outline:none;font-family:inherit">
+            </div>
+            <div style="width:1px;height:20px;background:#e2e8f0"></div>
+            <div style="display:flex;gap:4px" id="priorityPills">
+                <span onclick="filterPriority('all',this)" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#4f46e5;color:white">All</span>
+                <span onclick="filterPriority('High Priority',this)" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#f1f5f9;color:#64748b">🔴 High</span>
+                <span onclick="filterPriority('Medium',this)" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#f1f5f9;color:#64748b">🟡 Medium</span>
+                <span onclick="filterPriority('Low',this)" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#f1f5f9;color:#64748b">🟢 Low</span>
+            </div>
+            <div style="width:1px;height:20px;background:#e2e8f0"></div>
+            <select onchange="filterAssignee(this.value)" style="height:30px;padding:0 8px;border-radius:7px;border:1px solid #e2e8f0;font-size:12px;color:#64748b;background:white;font-family:inherit;cursor:pointer;outline:none">
+                <option value="all">All members</option>
+                <option value="JD">John Doe</option>
+                <option value="SM">Sarah Miller</option>
+                <option value="AK">Alex Kim</option>
+            </select>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+                <div style="display:flex">
+                    <div style="width:26px;height:26px;border-radius:50%;background:#e0e7ff;color:#4338ca;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid white">JD</div>
+                    <div style="width:26px;height:26px;border-radius:50%;background:#d1fae5;color:#065f46;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid white;margin-left:-6px">SM</div>
+                    <div style="width:26px;height:26px;border-radius:50%;background:#fce7f3;color:#9d174d;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid white;margin-left:-6px">AK</div>
+                </div>
+                <span id="taskCounter" style="font-size:11px;font-weight:700;color:#4f46e5">6 tasks</span>
+            </div>
+        </div>
+
+        <!-- ==================== VIEWS ==================== -->
+        <main class="flex-1 flex flex-col" style="overflow:hidden">
+
+            <!-- ===== BOARD VIEW ===== -->
+            <div id="view-board" class="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col space-y-6">
+                <div class="sm:flex sm:items-center sm:justify-between shrink-0">
+                    <div>
+                        <h1 class="text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">Project Scope Engineering</h1>
+                        <p class="mt-0.5 text-xs text-slate-500">Track structural components and stage iterations inside your tenant segment.</p>
+                    </div>
+                </div>
+                <div id="boardColumns" style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start;overflow-y:auto"></div>
+            </div>
+
+            <!-- ===== LIST VIEW ===== -->
+            <div id="view-list" style="display:none;flex:1;padding:24px 32px;overflow-y:auto">
+                <h1 style="font-size:20px;font-weight:800;color:#0f172a;margin-bottom:16px">All Tasks</h1>
+                <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden">
+                    <table style="width:100%;border-collapse:collapse" id="listTable">
+                        <thead>
+                            <tr style="background:#f8fafc">
+                                <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #e2e8f0"></th>
+                                <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #e2e8f0">Task</th>
+                                <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #e2e8f0">Status</th>
+                                <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #e2e8f0">Priority</th>
+                                <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #e2e8f0">Assignee</th>
+                                <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #e2e8f0">Due</th>
+                                <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #e2e8f0">Progress</th>
+                                <th style="padding:10px 14px;border-bottom:1px solid #e2e8f0"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="listBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== CALENDAR VIEW ===== -->
+            <div id="view-calendar" style="display:none;flex:1;padding:24px 32px;overflow-y:auto;display:none;flex-direction:column;gap:14px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                    <h2 id="calTitle" style="font-size:20px;font-weight:800;color:#0f172a"></h2>
+                    <div style="display:flex;gap:6px">
+                        <button onclick="changeMonth(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;background:white;cursor:pointer;font-size:16px;color:#64748b;display:flex;align-items:center;justify-content:center">←</button>
+                        <button onclick="changeMonth(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;background:white;cursor:pointer;font-size:16px;color:#64748b;display:flex;align-items:center;justify-content:center">→</button>
+                    </div>
+                </div>
+                <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#e2e8f0;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0"></div>
+            </div>
+
+            <!-- ===== ANALYTICS VIEW ===== -->
+            <div id="view-analytics" style="display:none;flex:1;padding:24px 32px;overflow-y:auto">
+                <h1 style="font-size:20px;font-weight:800;color:#0f172a;margin-bottom:16px">Project Analytics</h1>
+                <div id="analyticsContent"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ==================== TASK MODAL ==================== -->
+    <div id="task_modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-extrabold text-slate-900" id="modalHeading">Initialize New Task Block</h3>
+                <button onclick="toggleTaskModal(false)" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <!-- AI Suggest Button -->
+                <button onclick="aiAutoFill()" id="aiBtn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:8px;border:1px dashed #4f46e5;background:#eef2ff;color:#4f46e5;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">
+                    ✦ AI Auto-fill this task
+                </button>
+                <div id="aiLoader" style="display:none;text-align:center;padding:8px;background:#eef2ff;border-radius:8px;font-size:12px;font-weight:600;color:#4f46e5">✦ Claude is thinking...</div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">Task Title</label>
+                    <input id="task_title" type="text" placeholder="e.g., Secure webhook configurations"
+                        class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">Description</label>
+                    <textarea id="task_desc" rows="3" placeholder="Provide system implementation breakdown..."
+                        class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">Priority</label>
+                        <select id="task_priority" class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option>Low</option>
+                            <option selected>Medium</option>
+                            <option>High Priority</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">Assignee</label>
+                        <select id="task_assignee" class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="JD">John Doe</option>
+                            <option value="SM">Sarah Miller</option>
+                            <option value="AK">Alex Kim</option>
+                            <option value="?">Unassigned</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">Column</label>
+                        <select id="task_status" class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="todo">To Do</option>
+                            <option value="inprogress">In Progress</option>
+                            <option value="review">QA / Review</option>
+                            <option value="done">Completed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">Due Date</label>
+                        <input id="task_due" type="date" class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">Tags (comma separated)</label>
+                    <input id="task_tags" type="text" placeholder="backend, api, security"
+                        class="mt-1.5 block w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button type="button" onclick="toggleTaskModal(false)" class="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
+                <button type="button" onclick="saveTask()" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all">Commit Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DETAIL SIDE PANEL ==================== -->
+    <div id="detailPanel" style="position:fixed;right:0;top:0;bottom:0;width:380px;background:white;border-left:1px solid #e2e8f0;z-index:80;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease">
+        <div style="padding:16px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px">
+            <span id="panelId" style="font-size:10px;font-family:monospace;color:#94a3b8"></span>
+            <button onclick="closePanel()" style="margin-left:auto;width:26px;height:26px;border-radius:6px;border:1px solid #e2e8f0;background:white;cursor:pointer;font-size:14px;color:#64748b;display:flex;align-items:center;justify-content:center">✕</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+            <div id="panelTitle" style="font-size:16px;font-weight:700;color:#0f172a;line-height:1.4"></div>
+            <!-- Fields -->
+            <div style="display:flex;flex-direction:column;gap:0">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+                    <span style="font-size:11px;color:#94a3b8;width:80px;flex-shrink:0">Status</span>
+                    <span id="panelStatus" style="font-size:12px;font-weight:600;color:#0f172a"></span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+                    <span style="font-size:11px;color:#94a3b8;width:80px;flex-shrink:0">Priority</span>
+                    <span id="panelPriority" style="font-size:12px;font-weight:600;color:#0f172a"></span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+                    <span style="font-size:11px;color:#94a3b8;width:80px;flex-shrink:0">Assignee</span>
+                    <span id="panelAssignee" style="font-size:12px;font-weight:600;color:#0f172a"></span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+                    <span style="font-size:11px;color:#94a3b8;width:80px;flex-shrink:0">Due Date</span>
+                    <span id="panelDue" style="font-size:12px;font-weight:600;color:#0f172a"></span>
+                </div>
+            </div>
+            <!-- Description -->
+            <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px">Description</div>
+                <p id="panelDesc" style="font-size:12px;color:#64748b;line-height:1.6"></p>
+            </div>
+            <!-- Progress -->
+            <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px">Progress — <span id="panelPct">0%</span></div>
+                <div style="height:6px;background:#f1f5f9;border-radius:4px;overflow:hidden;margin-bottom:8px">
+                    <div id="panelBar" style="height:100%;background:#4f46e5;border-radius:4px;transition:width .3s"></div>
+                </div>
+                <input type="range" min="0" max="100" value="0" id="panelProgress" style="width:100%" oninput="updateProgress(this.value)">
+            </div>
+            <!-- Move to -->
+            <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px">Move to column</div>
+                <div id="panelMoveButtons" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            </div>
+            <!-- Tags -->
+            <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px">Tags</div>
+                <div id="panelTags" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+            </div>
+            <!-- Comments -->
+            <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:8px">Comments</div>
+                <div id="panelComments" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+                <div style="display:flex;gap:6px">
+                    <input id="commentInput" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')addComment()" style="flex:1;height:32px;padding:0 10px;border-radius:8px;border:1px solid #e2e8f0;font-size:12px;font-family:inherit;color:#0f172a;outline:none">
+                    <button onclick="addComment()" style="height:32px;padding:0 12px;border-radius:8px;border:none;background:#4f46e5;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Send</button>
+                </div>
+            </div>
+            <!-- Activity -->
+            <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;margin-bottom:8px">Activity</div>
+                <div id="panelActivity" style="display:flex;flex-direction:column;gap:6px"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TOAST CONTAINER ==================== -->
+    <div id="toastContainer" style="position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:200"></div>
+
+    <!-- Lucide Icons -->
+    <script>lucide.createIcons();</script>
+
+    <script>
+    // ==================== DATA ====================
+    let tasks = [
+        {id:'PLN-101',title:'Initialize tenant DB block schemas',desc:'Set up isolated database schemas per tenant with proper migration tooling and rollback procedures.',status:'done',priority:'High Priority',assignee:'JD',due:'2026-05-10',tags:['database','infra'],comments:[{author:'JD',text:'Deployed to staging successfully.',time:'3 days ago'}],activity:['JD moved to Completed','Deployment verified'],progress:100},
+        {id:'PLN-102',title:'Build workspace onboarding parameters',desc:'Validate step layout steps ensuring clean configuration loops without early user invitation dependencies.',status:'inprogress',priority:'Medium',assignee:'SM',due:'2026-05-28',tags:['onboarding','ux'],comments:[{author:'SM',text:'Working on step 3 now.',time:'1 day ago'},{author:'JD',text:'Looks good so far!',time:'5 hrs ago'}],activity:['SM started task','JD reviewed'],progress:45},
+        {id:'PLN-104',title:'Map database schema segregation blocks',desc:'Configure custom metadata routing hooks to confirm strict physical multi-tenant isolation layers.',status:'todo',priority:'High Priority',assignee:'JD',due:'2026-05-24',tags:['backend','security'],comments:[],activity:['Task created'],progress:0},
+        {id:'PLN-105',title:'Draft Access Token logic',desc:'Document the full OAuth token lifecycle including refresh, expiry, and revocation flows.',status:'todo',priority:'Low',assignee:'?',due:'2026-05-29',tags:['docs','auth'],comments:[],activity:['Task created'],progress:0},
+        {id:'PLN-106',title:'Load balancer health check config',desc:'Configure ALB health checks with appropriate thresholds and timeout windows for all services.',status:'review',priority:'Medium',assignee:'AK',due:'2026-05-26',tags:['infra','devops'],comments:[{author:'AK',text:'Ready for review.',time:'2 hrs ago'}],activity:['AK moved to QA'],progress:80},
+        {id:'PLN-107',title:'Redis cache layer integration',desc:'Add Redis caching for session tokens and frequently queried tenant configs to cut DB load.',status:'inprogress',priority:'High Priority',assignee:'AK',due:'2026-05-30',tags:['cache','performance'],comments:[],activity:['AK started'],progress:25}
+    ];
+    let nextId = 108;
+    let currentView = 'board';
+    let activePriority = 'all';
+    let activeAssignee = 'all';
+    let activeSearch = '';
+    let selectedTaskId = null;
+    let draggingId = null;
+    let calMonth = 4; // May (0-indexed)
+    let calYear = 2026;
+
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const COL_META = {
+        todo:     {label:'To Do',      dot:'#94a3b8', countBg:'#e2e8f0', countColor:'#475569'},
+        inprogress:{label:'In Progress',dot:'#4f46e5', countBg:'#e0e7ff', countColor:'#4338ca'},
+        review:   {label:'QA / Review',dot:'#f59e0b', countBg:'#fef3c7', countColor:'#92400e'},
+        done:     {label:'Completed',  dot:'#10b981', countBg:'#d1fae5', countColor:'#065f46'}
+    };
+    const COLS = ['todo','inprogress','review','done'];
+    const ASSIGNEE_NAMES = {JD:'John Doe',SM:'Sarah Miller',AK:'Alex Kim','?':'Unassigned'};
+
+    // ==================== FILTERS ====================
+    function getFiltered() {
+        return tasks.filter(t => {
+            if (activePriority !== 'all' && t.priority !== activePriority) return false;
+            if (activeAssignee !== 'all' && t.assignee !== activeAssignee) return false;
+            if (activeSearch && !t.title.toLowerCase().includes(activeSearch) && !t.desc.toLowerCase().includes(activeSearch)) return false;
+            return true;
+        });
+    }
+    function applyFilters() {
+        activeSearch = document.getElementById('searchInput').value.toLowerCase();
+        render();
+    }
+    function filterPriority(p, el) {
+        activePriority = p;
+        document.querySelectorAll('#priorityPills span').forEach(s => {
+            s.style.background = '#f1f5f9'; s.style.color = '#64748b';
+        });
+        el.style.background = '#4f46e5'; el.style.color = 'white';
+        render();
+    }
+    function filterAssignee(v) { activeAssignee = v; render(); }
+
+    // ==================== VIEW SWITCHER ====================
+    function switchView(v) {
+        currentView = v;
+        ['board','list','calendar','analytics'].forEach(n => {
+            document.getElementById('view-' + n).style.display = n === v ? (n === 'board' ? 'flex' : 'block') : 'none';
+        });
+        // Update tab styles
+        ['board','list','calendar','analytics'].forEach(n => {
+            const btn = document.getElementById('tab-' + n);
+            if (n === v) {
+                btn.style.background = 'white'; btn.style.color = '#1e293b';
+                btn.style.boxShadow = '0 1px 3px rgba(0,0,0,.08)';
+            } else {
+                btn.style.background = ''; btn.style.color = ''; btn.style.boxShadow = '';
+            }
+        });
+        render();
+    }
+
+    // ==================== MAIN RENDER ====================
+    function render() {
+        updateCounter();
+        if (currentView === 'board')     renderBoard();
+        else if (currentView === 'list') renderList();
+        else if (currentView === 'calendar') renderCalendar();
+        else if (currentView === 'analytics') renderAnalytics();
+        lucide.createIcons();
+    }
+    function updateCounter() {
+        const f = getFiltered();
+        document.getElementById('taskCounter').textContent = f.length + ' task' + (f.length !== 1 ? 's' : '');
+    }
+
+    // ==================== BOARD VIEW ====================
+    function renderBoard() {
+        const f = getFiltered();
+        const container = document.getElementById('boardColumns');
+        container.innerHTML = '';
+        COLS.forEach(col => {
+            const colTasks = f.filter(t => t.status === col);
+            const m = COL_META[col];
+            const colEl = document.createElement('div');
+            colEl.style.cssText = 'background:#f8fafc;border-radius:12px;padding:12px;border:1px solid #e2e8f0;display:flex;flex-direction:column;max-height:75vh';
+            colEl.innerHTML = `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:0 2px">
+                    <span style="width:8px;height:8px;border-radius:50%;background:${m.dot};flex-shrink:0"></span>
+                    <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#1e293b">${m.label}</span>
+                    <span style="background:${m.countBg};color:${m.countColor};font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px">${colTasks.length}</span>
+                    <button onclick="toggleTaskModal(true,'${col}')" style="margin-left:auto;width:22px;height:22px;border-radius:6px;border:none;background:transparent;cursor:pointer;color:#94a3b8;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center" title="Add task">+</button>
+                </div>
+                <div id="col-${col}" data-col="${col}" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:2px;min-height:60px"></div>
+            `;
+            container.appendChild(colEl);
+            const body = colEl.querySelector('#col-' + col);
+            if (colTasks.length === 0) {
+                body.innerHTML = `<div style="border:2px dashed #e2e8f0;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;color:#94a3b8;font-size:11px;min-height:80px;gap:4px"><i data-lucide="inbox" style="width:18px;height:18px;opacity:.4"></i>Drop tasks here</div>`;
+            } else {
+                colTasks.forEach(task => body.appendChild(makeCard(task)));
+            }
+            setupDrop(body, col);
+        });
+    }
+
+    function makePriorityBadge(p) {
+        if (p === 'High Priority') return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca">⬆ High</span>`;
+        if (p === 'Medium') return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#fffbeb;color:#92400e;border:1px solid #fde68a">● Med</span>`;
+        return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0">↓ Low</span>`;
+    }
+    function makeAvatar(a) {
+        const styles = {JD:'background:#e0e7ff;color:#4338ca',SM:'background:#d1fae5;color:#065f46',AK:'background:#fce7f3;color:#9d174d','?':'background:#f1f5f9;color:#64748b'};
+        return `<div style="width:22px;height:22px;border-radius:50%;${styles[a]||styles['?']};font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center">${a}</div>`;
+    }
+    function fmtDate(d) {
+        if (!d) return '—';
+        const [y,m,day] = d.split('-');
+        return MONTHS[+m-1].slice(0,3) + ' ' + +day;
+    }
+    function dueDateStyle(d, status) {
+        if (!d || status === 'done') return 'color:#94a3b8';
+        const [y,m,day] = d.split('-');
+        const due = new Date(+y,+m-1,+day);
+        const now = new Date(2026,4,24);
+        const diff = (due - now) / 86400000;
+        if (diff < 0) return 'color:#ef4444;font-weight:700';
+        if (diff <= 2) return 'color:#f59e0b;font-weight:700';
+        return 'color:#94a3b8';
+    }
+
+    function makeCard(task) {
+        const el = document.createElement('div');
+        el.draggable = true;
+        el.dataset.id = task.id;
+        const progressBar = task.progress > 0 ? `<div style="height:3px;background:#f1f5f9;border-radius:2px;overflow:hidden;margin-top:8px"><div style="height:100%;width:${task.progress}%;background:#4f46e5;border-radius:2px"></div></div>` : '';
+        const tagsHtml = task.tags && task.tags.length ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:6px">${task.tags.map(t=>`<span style="font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:#f1f5f9;color:#64748b">${t}</span>`).join('')}</div>` : '';
+        const commentsHtml = task.comments.length ? `<span style="font-size:10px;color:#64748b;display:flex;align-items:center;gap:3px"><i data-lucide="message-square" style="width:10px;height:10px"></i>${task.comments.length}</span>` : '';
+        const doneStyles = task.status === 'done' ? 'opacity:.75' : '';
+        el.style.cssText = `background:white;padding:13px;border-radius:10px;border:1px solid ${task.status==='inprogress'?'#c7d2fe':'#e2e8f0'};cursor:grab;transition:all .15s;${doneStyles}`;
+        el.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                ${makePriorityBadge(task.priority)}
+                <span style="font-size:10px;font-family:monospace;color:#94a3b8${task.status==='done'?';text-decoration:line-through':''}">${task.id}</span>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:${task.status==='done'?'#94a3b8':'#0f172a'};line-height:1.4;${task.status==='done'?'text-decoration:line-through':''}">${task.title}</div>
+            ${task.desc ? `<div style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${task.desc}</div>` : ''}
+            ${tagsHtml}
+            ${progressBar}
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:10px;font-weight:500;display:flex;align-items:center;gap:3px;${dueDateStyle(task.due,task.status)}"><i data-lucide="calendar" style="width:10px;height:10px"></i>${fmtDate(task.due)}</span>
+                    ${commentsHtml}
+                </div>
+                ${makeAvatar(task.assignee)}
+            </div>
+        `;
+        el.addEventListener('mouseenter', () => { el.style.borderColor='#a5b4fc'; el.style.transform='translateY(-1px)'; el.style.boxShadow='0 4px 12px rgba(79,70,229,.1)'; });
+        el.addEventListener('mouseleave', () => { el.style.borderColor=task.status==='inprogress'?'#c7d2fe':'#e2e8f0'; el.style.transform=''; el.style.boxShadow=''; });
+        el.addEventListener('dragstart', e => { draggingId = task.id; el.style.opacity='.4'; e.dataTransfer.effectAllowed='move'; });
+        el.addEventListener('dragend', () => { el.style.opacity=''; draggingId = null; });
+        el.addEventListener('click', () => openPanel(task.id));
+        return el;
+    }
+
+    function setupDrop(el, col) {
+        el.addEventListener('dragover', e => { e.preventDefault(); el.style.background='#eef2ff'; el.style.borderRadius='8px'; });
+        el.addEventListener('dragleave', () => { el.style.background=''; });
+        el.addEventListener('drop', e => {
+            e.preventDefault(); el.style.background='';
+            if (draggingId) {
+                const task = tasks.find(t => t.id === draggingId);
+                if (task && task.status !== col) {
+                    task.activity.unshift('Moved to ' + COL_META[col].label);
+                    task.status = col;
+                    if (col === 'done') task.progress = 100;
+                    showToast('✓ Moved to ' + COL_META[col].label, 'success');
+                    render();
+                    if (selectedTaskId === draggingId) refreshPanel();
+                }
+            }
+        });
+    }
+
+    // ==================== LIST VIEW ====================
+    function renderList() {
+        const f = getFiltered();
+        const tbody = document.getElementById('listBody');
+        tbody.innerHTML = '';
+        if (f.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:#94a3b8;font-size:13px">No tasks match your filters</td></tr>`;
+            return;
+        }
+        f.forEach(task => {
+            const tr = document.createElement('tr');
+            tr.style.cssText = 'border-bottom:1px solid #f1f5f9;transition:background .1s;cursor:pointer';
+            tr.onmouseenter = () => tr.style.background = '#f8fafc';
+            tr.onmouseleave = () => tr.style.background = '';
+            const statusStyles = {
+                todo:      'background:#f1f5f9;color:#475569',
+                inprogress:'background:#e0e7ff;color:#4338ca',
+                review:    'background:#fef3c7;color:#92400e',
+                done:      'background:#d1fae5;color:#065f46'
+            };
+            tr.innerHTML = `
+                <td style="padding:11px 14px;width:32px"><input type="checkbox" ${task.status==='done'?'checked':''} style="accent-color:#4f46e5;cursor:pointer" onchange="toggleDone('${task.id}',this.checked)"></td>
+                <td style="padding:11px 14px">
+                    <div style="font-size:13px;font-weight:600;color:${task.status==='done'?'#94a3b8':'#0f172a'}${task.status==='done'?';text-decoration:line-through':''}">${task.title}</div>
+                    <div style="font-size:10px;font-family:monospace;color:#94a3b8;margin-top:2px">${task.id}</div>
+                    ${task.tags.length ? `<div style="display:flex;gap:3px;margin-top:4px">${task.tags.map(t=>`<span style="font-size:9px;font-weight:600;padding:2px 5px;border-radius:4px;background:#f1f5f9;color:#64748b">${t}</span>`).join('')}</div>` : ''}
+                </td>
+                <td style="padding:11px 14px"><span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;${statusStyles[task.status]}">${COL_META[task.status].label}</span></td>
+                <td style="padding:11px 14px">${makePriorityBadge(task.priority)}</td>
+                <td style="padding:11px 14px"><div style="display:flex;align-items:center;gap:6px">${makeAvatar(task.assignee)}<span style="font-size:12px;color:#64748b">${ASSIGNEE_NAMES[task.assignee]||'—'}</span></div></td>
+                <td style="padding:11px 14px"><span style="font-size:12px;${dueDateStyle(task.due,task.status)}">${fmtDate(task.due)}</span></td>
+                <td style="padding:11px 14px">
+                    <div style="display:flex;align-items:center;gap:6px">
+                        <div style="width:64px;height:4px;background:#f1f5f9;border-radius:2px;overflow:hidden"><div style="height:100%;width:${task.progress}%;background:#4f46e5;border-radius:2px"></div></div>
+                        <span style="font-size:10px;color:#94a3b8;font-weight:600">${task.progress}%</span>
+                    </div>
+                </td>
+                <td style="padding:11px 14px"><button onclick="openPanel('${task.id}')" style="border:none;background:transparent;cursor:pointer;font-size:12px;color:#4f46e5;font-weight:600;font-family:inherit">View →</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+    function toggleDone(id, checked) {
+        const task = tasks.find(t => t.id === id);
+        if (!task) return;
+        task.status = checked ? 'done' : 'todo';
+        if (checked) task.progress = 100;
+        task.activity.unshift(checked ? 'Marked as completed' : 'Reopened');
+        showToast(checked ? '✓ Task completed' : 'Task reopened', 'success');
+        render();
+    }
+
+    // ==================== CALENDAR VIEW ====================
+    function renderCalendar() {
+        document.getElementById('calTitle').textContent = MONTHS[calMonth] + ' ' + calYear;
+        const grid = document.getElementById('calGrid');
+        grid.innerHTML = '';
+        DAYS_SHORT.forEach(d => {
+            const h = document.createElement('div');
+            h.style.cssText = 'background:#f8fafc;padding:8px 4px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8';
+            h.textContent = d;
+            grid.appendChild(h);
+        });
+        const first = new Date(calYear, calMonth, 1);
+        const startDay = first.getDay();
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const prevDays = new Date(calYear, calMonth, 0).getDate();
+        const today = new Date(2026, 4, 24);
+
+        for (let i = 0; i < startDay; i++) {
+            const d = document.createElement('div');
+            d.style.cssText = 'background:#f8fafc;min-height:90px;padding:6px';
+            d.innerHTML = `<div style="font-size:12px;color:#cbd5e1;font-weight:600;width:22px;height:22px;display:flex;align-items:center;justify-content:center">${prevDays - startDay + 1 + i}</div>`;
+            grid.appendChild(d);
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+            const dayTasks = tasks.filter(t => t.due === dateStr);
+            const isToday = calYear === today.getFullYear() && calMonth === today.getMonth() && day === today.getDate();
+            const d = document.createElement('div');
+            d.style.cssText = 'background:white;min-height:90px;padding:6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:background .1s';
+            d.onmouseenter = () => d.style.background = '#f8fafc';
+            d.onmouseleave = () => d.style.background = 'white';
+            const numStyle = isToday ? 'background:#4f46e5;color:white;border-radius:50%' : 'color:#475569';
+            d.innerHTML = `<div style="font-size:12px;font-weight:600;width:22px;height:22px;display:flex;align-items:center;justify-content:center;${numStyle}">${day}</div>`;
+            dayTasks.forEach(task => {
+                const chipColors = {done:'background:#d1fae5;color:#065f46',inprogress:'background:#e0e7ff;color:#4338ca',review:'background:#fef3c7;color:#92400e',todo:task.priority==='High Priority'?'background:#fef2f2;color:#b91c1c':'background:#f1f5f9;color:#475569'};
+                const chip = document.createElement('div');
+                chip.style.cssText = `padding:2px 5px;border-radius:4px;font-size:9px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;${chipColors[task.status]}`;
+                chip.title = task.title;
+                chip.textContent = task.title.length > 20 ? task.title.slice(0,20)+'…' : task.title;
+                chip.onclick = (e) => { e.stopPropagation(); openPanel(task.id); };
+                d.appendChild(chip);
+            });
+            grid.appendChild(d);
+        }
+        const total = startDay + daysInMonth;
+        const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+        for (let i = 1; i <= remaining; i++) {
+            const d = document.createElement('div');
+            d.style.cssText = 'background:#f8fafc;min-height:90px;padding:6px';
+            d.innerHTML = `<div style="font-size:12px;color:#cbd5e1;font-weight:600;width:22px;height:22px;display:flex;align-items:center;justify-content:center">${i}</div>`;
+            grid.appendChild(d);
+        }
+    }
+    function changeMonth(dir) {
+        calMonth += dir;
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        renderCalendar();
+    }
+
+    // ==================== ANALYTICS VIEW ====================
+    function renderAnalytics() {
+        const all = tasks;
+        const done = all.filter(t => t.status === 'done').length;
+        const inprog = all.filter(t => t.status === 'inprogress').length;
+        const todo = all.filter(t => t.status === 'todo').length;
+        const review = all.filter(t => t.status === 'review').length;
+        const high = all.filter(t => t.priority === 'High Priority').length;
+        const med = all.filter(t => t.priority === 'Medium').length;
+        const low = all.filter(t => t.priority === 'Low').length;
+        const completion = Math.round((done / all.length) * 100);
+        const avgProg = Math.round(all.reduce((s,t) => s + t.progress, 0) / all.length);
+        const overdue = all.filter(t => {
+            if (!t.due || t.status === 'done') return false;
+            const [y,m,d] = t.due.split('-');
+            return new Date(+y,+m-1,+d) < new Date(2026,4,24);
+        }).length;
+        const maxBar = Math.max(done, inprog, todo, review, 1);
+        const bh = v => Math.max(4, Math.round((v / maxBar) * 90));
+
+        document.getElementById('analyticsContent').innerHTML = `
+            <!-- Stat Cards -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+                ${[
+                    ['Total Tasks', all.length, '↑ Active', '#4f46e5'],
+                    ['Completion', completion+'%', done+' of '+all.length+' done', completion>=50?'#10b981':'#f59e0b'],
+                    ['Avg Progress', avgProg+'%', 'Across all tasks', '#4f46e5'],
+                    ['Overdue', overdue, overdue>0?'⚠ Needs attention':'✓ On track', overdue>0?'#ef4444':'#10b981']
+                ].map(([label,val,sub,color])=>`
+                    <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;padding:16px">
+                        <div style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em">${label}</div>
+                        <div style="font-size:28px;font-weight:700;color:${color};margin-top:4px;line-height:1">${val}</div>
+                        <div style="font-size:11px;font-weight:600;color:${color};margin-top:4px">${sub}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <!-- Charts row -->
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px">
+                <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;padding:16px">
+                    <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:14px">Tasks by status</div>
+                    <div style="display:flex;align-items:flex-end;gap:8px;height:110px">
+                        ${[['To Do',todo,'#94a3b8'],['In Progress',inprog,'#4f46e5'],['QA / Review',review,'#f59e0b'],['Completed',done,'#10b981']].map(([label,val,color])=>`
+                            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+                                <span style="font-size:11px;font-weight:700;color:#475569">${val}</span>
+                                <div style="width:100%;height:${bh(val)}px;background:${color};border-radius:4px 4px 0 0;min-height:4px"></div>
+                                <span style="font-size:9px;color:#94a3b8;font-weight:600;text-align:center;line-height:1.2">${label}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;padding:16px">
+                    <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:14px">Priority breakdown</div>
+                    ${[['High Priority',high,'#ef4444'],['Medium',med,'#f59e0b'],['Low',low,'#10b981']].map(([label,val,color])=>`
+                        <div style="margin-bottom:10px">
+                            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:#64748b">${label}</span><span style="font-weight:700;color:#0f172a">${val}</span></div>
+                            <div style="height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden"><div style="height:100%;width:${all.length?Math.round((val/all.length)*100):0}%;background:${color};border-radius:3px"></div></div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            <!-- Team workload -->
+            <div style="background:white;border-radius:12px;border:1px solid #e2e8f0;padding:16px">
+                <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:14px">Team workload</div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                    ${[['JD','John Doe','background:#e0e7ff;color:#4338ca'],['SM','Sarah Miller','background:#d1fae5;color:#065f46'],['AK','Alex Kim','background:#fce7f3;color:#9d174d']].map(([av,name,avStyle])=>{
+                        const mt = all.filter(t=>t.assignee===av);
+                        const md = mt.filter(t=>t.status==='done').length;
+                        return `<div style="display:flex;align-items:center;gap:12px">
+                            <div style="width:30px;height:30px;border-radius:50%;${avStyle};font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${av}</div>
+                            <div style="flex:1">
+                                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:600;color:#0f172a">${name}</span><span style="color:#94a3b8">${md}/${mt.length} done</span></div>
+                                <div style="height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden"><div style="height:100%;width:${mt.length?Math.round((md/mt.length)*100):0}%;background:#4f46e5;border-radius:3px"></div></div>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // ==================== DETAIL PANEL ====================
+    function openPanel(id) {
+        selectedTaskId = id;
+        refreshPanel();
+        document.getElementById('detailPanel').style.transform = 'translateX(0)';
+    }
+    function closePanel() {
+        document.getElementById('detailPanel').style.transform = 'translateX(100%)';
+        selectedTaskId = null;
+    }
+    function refreshPanel() {
+        const task = tasks.find(t => t.id === selectedTaskId);
+        if (!task) return;
+        document.getElementById('panelId').textContent = task.id;
+        document.getElementById('panelTitle').textContent = task.title;
+        document.getElementById('panelStatus').textContent = COL_META[task.status].label;
+        document.getElementById('panelPriority').textContent = task.priority;
+        document.getElementById('panelAssignee').textContent = ASSIGNEE_NAMES[task.assignee] || '—';
+        document.getElementById('panelDue').textContent = fmtDate(task.due);
+        document.getElementById('panelDesc').textContent = task.desc || 'No description provided.';
+        document.getElementById('panelPct').textContent = task.progress + '%';
+        document.getElementById('panelBar').style.width = task.progress + '%';
+        document.getElementById('panelProgress').value = task.progress;
+        // Tags
+        const tagsEl = document.getElementById('panelTags');
+        tagsEl.innerHTML = task.tags.length ? task.tags.map(t=>`<span style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:#f1f5f9;color:#475569">${t}</span>`).join('') : '<span style="font-size:12px;color:#94a3b8">None</span>';
+        // Move buttons
+        const moveDiv = document.getElementById('panelMoveButtons');
+        moveDiv.innerHTML = '';
+        COLS.filter(c => c !== task.status).forEach(c => {
+            const btn = document.createElement('button');
+            btn.style.cssText = 'height:28px;padding:0 10px;font-size:11px;font-weight:600;border-radius:7px;border:1px solid #e2e8f0;background:white;cursor:pointer;font-family:inherit;color:#475569;transition:all .15s';
+            btn.textContent = '→ ' + COL_META[c].label;
+            btn.onmouseenter = () => { btn.style.borderColor='#4f46e5'; btn.style.color='#4f46e5'; };
+            btn.onmouseleave = () => { btn.style.borderColor='#e2e8f0'; btn.style.color='#475569'; };
+            btn.onclick = () => {
+                task.activity.unshift('Moved to ' + COL_META[c].label);
+                task.status = c;
+                if (c === 'done') task.progress = 100;
+                showToast('✓ Moved to ' + COL_META[c].label, 'success');
+                render(); refreshPanel();
+            };
+            moveDiv.appendChild(btn);
+        });
+        // Comments
+        const comm = document.getElementById('panelComments');
+        comm.innerHTML = task.comments.map(c => `
+            <div style="display:flex;gap:8px">
+                <div style="width:24px;height:24px;border-radius:50%;background:#e0e7ff;color:#4338ca;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${c.author}</div>
+                <div style="background:#f8fafc;border-radius:8px;padding:8px 10px;flex:1">
+                    <div style="font-size:11px;font-weight:700;color:#0f172a">${ASSIGNEE_NAMES[c.author]||c.author}</div>
+                    <div style="font-size:12px;color:#64748b;margin-top:2px">${c.text}</div>
+                    <div style="font-size:10px;color:#94a3b8;margin-top:3px">${c.time}</div>
+                </div>
+            </div>
+        `).join('');
+        // Activity
+        const act = document.getElementById('panelActivity');
+        act.innerHTML = task.activity.slice(0,5).map(a => `
+            <div style="display:flex;gap:8px;align-items:flex-start">
+                <div style="width:6px;height:6px;border-radius:50%;background:#4f46e5;margin-top:5px;flex-shrink:0"></div>
+                <div style="font-size:11px;color:#64748b;line-height:1.5">${a}</div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+    function updateProgress(val) {
+        const task = tasks.find(t => t.id === selectedTaskId);
+        if (!task) return;
+        task.progress = +val;
+        document.getElementById('panelPct').textContent = val + '%';
+        document.getElementById('panelBar').style.width = val + '%';
+        render();
+    }
+    function addComment() {
+        const inp = document.getElementById('commentInput');
+        const text = inp.value.trim();
+        if (!text) return;
+        const task = tasks.find(t => t.id === selectedTaskId);
+        if (!task) return;
+        task.comments.push({author:'JD', text, time:'just now'});
+        task.activity.unshift('JD commented');
+        inp.value = '';
+        refreshPanel();
+        showToast('Comment added');
+    }
+
+    // ==================== MODAL ====================
+    function toggleTaskModal(show, col) {
+        const modal = document.getElementById('task_modal');
+        if (show) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (col) document.getElementById('task_status').value = col;
+            document.getElementById('task_title').focus();
+        } else {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+    }
+    function saveTask() {
+        const title = document.getElementById('task_title').value.trim();
+        if (!title) { showToast('Task title is required', 'error'); return; }
+        const tags = document.getElementById('task_tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+        const task = {
+            id: 'PLN-' + nextId++,
+            title,
+            desc: document.getElementById('task_desc').value.trim(),
+            status: document.getElementById('task_status').value,
+            priority: document.getElementById('task_priority').value,
+            assignee: document.getElementById('task_assignee').value,
+            due: document.getElementById('task_due').value,
+            tags,
+            comments: [],
+            activity: ['Task created'],
+            progress: 0
+        };
+        tasks.push(task);
+        toggleTaskModal(false);
+        showToast('✓ Task created!', 'success');
+        render();
+    }
+
+    // ==================== AI SUGGEST ====================
+    async function openAISuggest() { toggleTaskModal(true); setTimeout(aiAutoFill, 200); }
+    async function aiAutoFill() {
+        document.getElementById('aiBtn').style.display = 'none';
+        document.getElementById('aiLoader').style.display = 'block';
+        try {
+            const context = tasks.map(t => t.title).join(', ');
+            const hint = document.getElementById('task_title').value;
+            const prompt = `You are a project management assistant. Project: "Q2 Core Infrastructure Rollout". Existing tasks: ${context}. ${hint?'User typed: "'+hint+'". ':''}Suggest one new relevant technical task. Reply ONLY with JSON (no markdown): {"title":"...","desc":"...","priority":"Medium","tags":["...","..."]}. Title under 8 words, desc under 25 words, 2 tags.`;
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:prompt}]})
+            });
+            const data = await res.json();
+            const text = data.content[0].text.replace(/```json|```/g,'').trim();
+            const parsed = JSON.parse(text);
+            document.getElementById('task_title').value = parsed.title || '';
+            document.getElementById('task_desc').value = parsed.desc || '';
+            if (parsed.priority) document.getElementById('task_priority').value = parsed.priority;
+            document.getElementById('task_tags').value = (parsed.tags||[]).join(', ');
+            showToast('✦ AI suggestion filled in!', 'success');
+        } catch(e) {
+            showToast('AI fill failed — try again', 'error');
+        }
+        document.getElementById('aiLoader').style.display = 'none';
+        document.getElementById('aiBtn').style.display = 'flex';
+    }
+
+    // ==================== TOAST ====================
+    function showToast(msg, type) {
+        const c = document.getElementById('toastContainer');
+        const t = document.createElement('div');
+        const bg = type==='success'?'#065f46':type==='error'?'#991b1b':'#1e293b';
+        t.style.cssText = `background:${bg};color:white;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;max-width:280px;animation:none`;
+        t.textContent = msg;
+        c.appendChild(t);
+        setTimeout(() => t.remove(), 2500);
+    }
+
+    // ==================== SIDEBAR NAV ====================
+    function selectNavItem(targetName) {
+        const activeStyles = ['bg-indigo-50/60', 'text-indigo-600', 'font-semibold'];
+        const inactiveStyles = ['text-slate-600', 'font-medium', 'hover:bg-slate-50', 'hover:text-slate-900'];
+        const links = document.querySelectorAll('aside nav a');
+        links.forEach(link => {
+            const labelSpan = link.querySelector('span');
+            if (!labelSpan) return;
+            if (labelSpan.textContent.trim().toLowerCase() === targetName.trim().toLowerCase()) {
+                link.classList.remove(...inactiveStyles); link.classList.add(...activeStyles);
+            } else {
+                link.classList.remove(...activeStyles); link.classList.add(...inactiveStyles);
+            }
+        });
+    }
+
+    // ==================== INIT ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        selectNavItem('Project Boards');
+        document.getElementById('task_due').value = '2026-05-31';
+        // Set calendar view to flex properly
+        const calView = document.getElementById('view-calendar');
+        calView.style.display = 'none';
+        render();
+    });
+    </script>
+
+{% endblock %}
